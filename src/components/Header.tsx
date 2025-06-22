@@ -14,6 +14,7 @@ import {
   Trash2,
   Share2,
   User as UserIcon,
+  Edit,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { BoardModal } from './BoardModal';
@@ -27,11 +28,13 @@ interface HeaderProps {
 }
 
 export function Header({ currentView, onViewChange, onCreateTask }: HeaderProps) {
-  const { currentUser, logout, boards, currentBoardId, setCurrentBoard, getCurrentBoardTasks, deleteBoard, generateBoardLink, notifications } = useApp();
+  const { currentUser, logout, boards, currentBoardId, setCurrentBoard, getCurrentBoardTasks, deleteBoard, generateBoardLink, notifications, updateBoard } = useApp();
   const [showBoardDropdown, setShowBoardDropdown] = useState(false);
   const [showBoardModal, setShowBoardModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [editingBoardId, setEditingBoardId] = useState<string | null>(null);
+  const [editingBoardName, setEditingBoardName] = useState('');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   React.useEffect(() => {
@@ -61,6 +64,24 @@ export function Header({ currentView, onViewChange, onCreateTask }: HeaderProps)
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showBoardDropdown, showNotifications]);
+
+  // Закрытие других панелей при открытии новой (мобильная версия)
+  useEffect(() => {
+    if (isMobile) {
+      if (showBoardDropdown) {
+        setShowNotifications(false);
+        setShowProfileModal(false);
+      }
+      if (showNotifications) {
+        setShowBoardDropdown(false);
+        setShowProfileModal(false);
+      }
+      if (showProfileModal) {
+        setShowBoardDropdown(false);
+        setShowNotifications(false);
+      }
+    }
+  }, [showBoardDropdown, showNotifications, showProfileModal, isMobile]);
 
   const tasks = getCurrentBoardTasks();
   const activeTasks = tasks.filter(task => task.status !== 'completed').length;
@@ -98,6 +119,28 @@ export function Header({ currentView, onViewChange, onCreateTask }: HeaderProps)
     }).catch(() => {
       prompt('СКОПИРУЙТЕ ССЫЛКУ НА ДОСКУ:', link);
     });
+  };
+
+  const handleEditBoard = (boardId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const board = boards.find(b => b.id === boardId);
+    if (!board) return;
+    
+    setEditingBoardId(boardId);
+    setEditingBoardName(board.name);
+  };
+
+  const handleSaveBoardName = (boardId: string) => {
+    if (editingBoardName.trim()) {
+      updateBoard(boardId, { name: editingBoardName.trim() });
+    }
+    setEditingBoardId(null);
+    setEditingBoardName('');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingBoardId(null);
+    setEditingBoardName('');
   };
 
   const iconColor = '#B6C2FC';
@@ -144,30 +187,63 @@ export function Header({ currentView, onViewChange, onCreateTask }: HeaderProps)
                         onClick={() => handleBoardChange(board.id)}
                       >
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium uppercase truncate text-sm">{board.name}</div>
-                          {board.description && (
-                            <div className="text-xs text-gray-500 truncate uppercase">{board.description}</div>
+                          {editingBoardId === board.id ? (
+                            <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
+                              <input
+                                type="text"
+                                value={editingBoardName}
+                                onChange={(e) => setEditingBoardName(e.target.value)}
+                                className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                onKeyPress={(e) => {
+                                  if (e.key === 'Enter') {
+                                    handleSaveBoardName(board.id);
+                                  } else if (e.key === 'Escape') {
+                                    handleCancelEdit();
+                                  }
+                                }}
+                                onBlur={() => handleSaveBoardName(board.id)}
+                                autoFocus
+                              />
+                            </div>
+                          ) : (
+                            <>
+                              <div className="font-medium uppercase truncate text-sm">{board.name}</div>
+                              {board.description && (
+                                <div className="text-xs text-gray-500 truncate uppercase">{board.description}</div>
+                              )}
+                              <div className="text-xs text-gray-400 uppercase">КОД: {board.code}</div>
+                            </>
                           )}
-                          <div className="text-xs text-gray-400 uppercase">КОД: {board.code}</div>
                         </div>
-                        <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={(e) => handleShareBoard(board.id, e)}
-                            className="p-1 text-blue-600 hover:text-blue-800"
-                            title="ПОДЕЛИТЬСЯ ДОСКОЙ"
-                          >
-                            <Share2 className="w-3 h-3" />
-                          </button>
-                          {(currentUser?.role === 'admin' || board.createdBy === currentUser?.id) && userBoards.length > 1 && (
+                        {editingBoardId !== board.id && (
+                          <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
-                              onClick={(e) => handleDeleteBoard(board.id, e)}
-                              className="p-1 text-red-600 hover:text-red-800"
-                              title="УДАЛИТЬ ДОСКУ"
+                              onClick={(e) => handleShareBoard(board.id, e)}
+                              className="p-1 text-blue-600 hover:text-blue-800"
+                              title="ПОДЕЛИТЬСЯ ДОСКОЙ"
                             >
-                              <Trash2 className="w-3 h-3" />
+                              <Share2 className="w-3 h-3" />
                             </button>
-                          )}
-                        </div>
+                            {currentUser?.role === 'admin' && (
+                              <button
+                                onClick={(e) => handleEditBoard(board.id, e)}
+                                className="p-1 text-gray-600 hover:text-gray-800"
+                                title="РЕДАКТИРОВАТЬ НАЗВАНИЕ"
+                              >
+                                <Edit className="w-3 h-3" />
+                              </button>
+                            )}
+                            {(currentUser?.role === 'admin' || board.createdBy === currentUser?.id) && userBoards.length > 1 && (
+                              <button
+                                onClick={(e) => handleDeleteBoard(board.id, e)}
+                                className="p-1 text-red-600 hover:text-red-800"
+                                title="УДАЛИТЬ ДОСКУ"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -244,7 +320,7 @@ export function Header({ currentView, onViewChange, onCreateTask }: HeaderProps)
           <button
             onClick={onCreateTask}
             className="flex items-center space-x-1 md:space-x-2 text-white px-3 md:px-4 py-2 rounded-lg transition-all font-medium"
-            style={{ backgroundColor: '#B6C2FC' }}
+            style={{ backgroundColor: '#a4d2fc' }}
           >
             <Plus className="w-4 h-4 md:w-5 md:h-5" />
             <span className="hidden sm:inline uppercase text-sm md:text-base">СОЗДАТЬ ЗАДАЧУ</span>
@@ -308,55 +384,60 @@ export function Header({ currentView, onViewChange, onCreateTask }: HeaderProps)
           onClick={() => onViewChange('board')}
           className={`flex-shrink-0 flex items-center justify-center space-x-1 py-2 px-3 rounded-md font-medium transition-colors ${
             currentView === 'board'
-              ? 'bg-white text-blue-700 shadow-sm'
+              ? 'text-white shadow-sm'
               : 'text-gray-600'
           }`}
+          style={{ backgroundColor: currentView === 'board' ? '#B6C2FC' : 'transparent' }}
         >
-          <LayoutGrid className="w-4 h-4" style={{ color: currentView === 'board' ? '#1d4ed8' : iconColor }} />
+          <LayoutGrid className="w-4 h-4" style={{ color: currentView === 'board' ? 'white' : iconColor }} />
           <span className="text-xs uppercase">ДОСКА</span>
         </button>
         <button
           onClick={() => onViewChange('calendar')}
           className={`flex-shrink-0 flex items-center justify-center space-x-1 py-2 px-3 rounded-md font-medium transition-colors ${
             currentView === 'calendar'
-              ? 'bg-white text-blue-700 shadow-sm'
+              ? 'text-white shadow-sm'
               : 'text-gray-600'
           }`}
+          style={{ backgroundColor: currentView === 'calendar' ? '#B6C2FC' : 'transparent' }}
         >
-          <Calendar className="w-4 h-4" style={{ color: currentView === 'calendar' ? '#1d4ed8' : iconColor }} />
+          <Calendar className="w-4 h-4" style={{ color: currentView === 'calendar' ? 'white' : iconColor }} />
           <span className="text-xs uppercase">КАЛЕНДАРЬ</span>
         </button>
         <button
           onClick={() => onViewChange('analytics')}
           className={`flex-shrink-0 flex items-center justify-center space-x-1 py-2 px-3 rounded-md font-medium transition-colors ${
             currentView === 'analytics'
-              ? 'bg-white text-blue-700 shadow-sm'
+              ? 'text-white shadow-sm'
               : 'text-gray-600'
           }`}
+          style={{ backgroundColor: currentView === 'analytics' ? '#B6C2FC' : 'transparent' }}
         >
-          <BarChart3 className="w-4 h-4" style={{ color: currentView === 'analytics' ? '#1d4ed8' : iconColor }} />
+          <BarChart3 className="w-4 h-4" style={{ color: currentView === 'analytics' ? 'white' : iconColor }} />
           <span className="text-xs uppercase">АНАЛИТИКА</span>
         </button>
         <button
           onClick={() => onViewChange('users')}
           className={`flex-shrink-0 flex items-center justify-center space-x-1 py-2 px-3 rounded-md font-medium transition-colors ${
             currentView === 'users'
-              ? 'bg-white text-blue-700 shadow-sm'
+              ? 'text-white shadow-sm'
               : 'text-gray-600'
           }`}
+          style={{ backgroundColor: currentView === 'users' ? '#B6C2FC' : 'transparent' }}
         >
-          <Users className="w-4 h-4" style={{ color: currentView === 'users' ? '#1d4ed8' : iconColor }} />
+          <Users className="w-4 h-4" style={{ color: currentView === 'users' ? 'white' : iconColor }} />
           <span className="text-xs uppercase">ПОЛЬЗОВАТЕЛИ</span>
         </button>
         <button
           onClick={() => onViewChange('profile')}
           className={`flex-shrink-0 flex items-center justify-center space-x-1 py-2 px-3 rounded-md font-medium transition-colors ${
             currentView === 'profile'
-              ? 'bg-white text-blue-700 shadow-sm'
+              ? 'text-white shadow-sm'
               : 'text-gray-600'
           }`}
+          style={{ backgroundColor: currentView === 'profile' ? '#B6C2FC' : 'transparent' }}
         >
-          <UserIcon className="w-4 h-4" style={{ color: currentView === 'profile' ? '#1d4ed8' : iconColor }} />
+          <UserIcon className="w-4 h-4" style={{ color: currentView === 'profile' ? 'white' : iconColor }} />
           <span className="text-xs uppercase">ПРОФИЛЬ</span>
         </button>
       </nav>

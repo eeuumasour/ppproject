@@ -183,7 +183,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                 ? 'text-white'
                 : 'text-gray-600 hover:bg-gray-100'
             }`}
-            style={{ backgroundColor: activeTab === 'profile' ? '#B6C2FC' : '#A4D2FC' }}
+            style={{ backgroundColor: activeTab === 'profile' ? '#a4d2fc' : 'transparent' }}
           >
             <User className="w-4 h-4 inline mr-2" />
             ПРОФИЛЬ
@@ -195,7 +195,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                 ? 'text-white'
                 : 'text-gray-600 hover:bg-gray-100'
             }`}
-            style={{ backgroundColor: activeTab === 'stats' ? '#B6C2FC' : '#A4D2FC' }}
+            style={{ backgroundColor: activeTab === 'stats' ? '#a4d2fc' : 'transparent' }}
           >
             <BarChart3 className="w-4 h-4 inline mr-2" />
             СТАТИСТИКА

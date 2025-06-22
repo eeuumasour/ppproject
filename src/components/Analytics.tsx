@@ -87,6 +87,13 @@ export function Analytics() {
     };
   });
 
+  // Цвета приоритетов для графиков
+  const priorityColors = {
+    high: '#FFB3BA',
+    medium: '#FFDFBA', 
+    low: '#BAFFC9',
+  };
+
   const StatCard = ({ icon: Icon, title, value, subtitle, color }: {
     icon: React.ElementType;
     title: string;
@@ -172,7 +179,7 @@ export function Analytics() {
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="w-3 h-3 md:w-4 md:h-4 rounded" style={{ backgroundColor: '#fcfba2' }}></div>
+                <div className="w-3 h-3 md:w-4 md:h-4 rounded" style={{ backgroundColor: priorityColors.medium }}></div>
                 <span className="text-xs md:text-sm text-gray-700 uppercase">В ПРОЦЕССЕ</span>
               </div>
               <div className="flex items-center space-x-2">
@@ -181,7 +188,7 @@ export function Analytics() {
                   <div 
                     className="h-2 rounded-full" 
                     style={{ 
-                      backgroundColor: '#fcfba2',
+                      backgroundColor: priorityColors.medium,
                       width: `${totalTasks > 0 ? (inProgressTasks / totalTasks) * 100 : 0}%` 
                     }}
                   ></div>
@@ -190,15 +197,18 @@ export function Analytics() {
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="w-3 h-3 md:w-4 md:h-4 bg-green-300 rounded"></div>
+                <div className="w-3 h-3 md:w-4 md:h-4 rounded" style={{ backgroundColor: priorityColors.low }}></div>
                 <span className="text-xs md:text-sm text-gray-700 uppercase">ВЫПОЛНЕНО</span>
               </div>
               <div className="flex items-center space-x-2">
                 <span className="text-xs md:text-sm font-medium text-gray-900">{completedTasks}</span>
                 <div className="w-16 md:w-20 bg-gray-200 rounded-full h-2">
                   <div 
-                    className="bg-green-300 h-2 rounded-full" 
-                    style={{ width: `${totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0}%` }}
+                    className="h-2 rounded-full" 
+                    style={{ 
+                      backgroundColor: priorityColors.low,
+                      width: `${totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0}%` 
+                    }}
                   ></div>
                 </div>
               </div>
@@ -247,7 +257,7 @@ export function Analytics() {
           <div className="overflow-x-auto">
             <table className="w-full text-xs md:text-sm">
               <thead>
-                <tr className="border-b border-gray-200">
+                <tr className="border-b border-gray-200" style={{ backgroundColor: '#a4d2fc' }}>
                   <th className="text-left py-2 font-medium text-gray-700 uppercase">МЕСЯЦ</th>
                   <th className="text-center py-2 font-medium text-gray-700 uppercase">ВСЕГО</th>
                   <th className="text-center py-2 font-medium text-gray-700 uppercase">ВЫПОЛНЕНО</th>
@@ -327,7 +337,7 @@ export function Analytics() {
           // Десктопная версия - таблица
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="border-b border-gray-200" style={{ backgroundColor: '#b6c2fc' }}>
+              <thead className="border-b border-gray-200" style={{ backgroundColor: '#a4d2fc' }}>
                 <tr>
                   <th className="text-left py-3 px-4 font-medium text-gray-700 uppercase">ПОЛЬЗОВАТЕЛЬ</th>
                   <th className="text-center py-3 px-4 font-medium text-gray-700 uppercase">ВСЕГО</th>

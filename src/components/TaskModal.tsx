@@ -238,7 +238,7 @@ export function TaskModal({ task, isOpen, onClose, defaultStatus = 'created' }: 
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
           userId: currentUser?.id || '',
           url: URL.createObjectURL(blob),
-          duration: 0, // В реальном приложении здесь была бы длительность
+          duration: 0,
           createdAt: new Date().toISOString(),
         };
         setVoiceMessages(prev => [...prev, voiceMessage]);
@@ -330,7 +330,8 @@ export function TaskModal({ task, isOpen, onClose, defaultStatus = 'created' }: 
     return new Date().toISOString().split('T')[0];
   };
 
-  const formatTextForDisplay = (text: string) => {
+  // Функция для отображения форматированного текста без кода
+  const renderFormattedText = (text: string) => {
     if (!text) return '';
     
     return text
@@ -369,20 +370,20 @@ export function TaskModal({ task, isOpen, onClose, defaultStatus = 'created' }: 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
-        <div className="flex items-center justify-center p-6 border-b border-gray-200 relative">
-          <h2 className="text-xl font-semibold text-gray-900 uppercase">
+        <div className="flex items-center justify-between p-4 md:p-6 border-b border-gray-200">
+          <h2 className="text-lg md:text-xl font-semibold text-gray-900 uppercase pr-8">
             {task ? 'РЕДАКТИРОВАТЬ ЗАДАЧУ' : 'СОЗДАТЬ НОВУЮ ЗАДАЧУ'}
           </h2>
           <button
             onClick={handleClose}
-            className="absolute right-6 p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="overflow-y-auto max-h-[calc(90vh-140px)]">
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <div className="overflow-y-auto max-h-[calc(90vh-180px)]">
+          <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4 md:space-y-6">
             {/* Название */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2 uppercase">
@@ -489,7 +490,7 @@ export function TaskModal({ task, isOpen, onClose, defaultStatus = 'created' }: 
                   <div className="text-sm text-gray-600 mb-1 uppercase">ПРЕДВАРИТЕЛЬНЫЙ ПРОСМОТР:</div>
                   <div 
                     className="text-sm text-gray-800 leading-relaxed formatted-text"
-                    dangerouslySetInnerHTML={{ __html: formatTextForDisplay(formData.description) }}
+                    dangerouslySetInnerHTML={{ __html: renderFormattedText(formData.description) }}
                   />
                 </div>
               )}
@@ -805,13 +806,13 @@ export function TaskModal({ task, isOpen, onClose, defaultStatus = 'created' }: 
         </div>
 
         {/* Подвал */}
-        <div className="flex items-center justify-between p-6 bg-gray-50 border-t border-gray-200">
+        <div className="flex items-center justify-between p-4 md:p-6 bg-gray-50 border-t border-gray-200">
           <div className="flex items-center">
             {task && (
               <button
                 type="button"
                 onClick={handleDelete}
-                className="flex items-center justify-center space-x-2 px-6 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors font-medium uppercase"
+                className="flex items-center justify-center space-x-2 px-4 md:px-6 py-2 md:py-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors font-medium uppercase"
               >
                 <Trash2 className="w-4 h-4" />
                 <span>УДАЛИТЬ</span>
@@ -819,18 +820,18 @@ export function TaskModal({ task, isOpen, onClose, defaultStatus = 'created' }: 
             )}
           </div>
           
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3 md:space-x-4">
             <button
               type="button"
               onClick={handleClose}
-              className="flex items-center justify-center px-6 py-3 text-gray-700 hover:bg-gray-100 rounded-xl transition-colors font-medium uppercase"
+              className="flex items-center justify-center px-4 md:px-6 py-2 md:py-3 text-gray-700 hover:bg-gray-100 rounded-xl transition-colors font-medium uppercase"
             >
               ОТМЕНА
             </button>
             
             <button
               onClick={handleSubmit}
-              className="flex items-center justify-center space-x-2 text-white px-6 py-3 rounded-xl transition-all font-medium uppercase"
+              className="flex items-center justify-center space-x-2 text-white px-4 md:px-6 py-2 md:py-3 rounded-xl transition-all font-medium uppercase"
               style={{ backgroundColor: '#b6c2fc' }}
             >
               <Save className="w-4 h-4" />

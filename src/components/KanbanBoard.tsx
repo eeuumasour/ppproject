@@ -179,7 +179,7 @@ export function KanbanBoard() {
     );
   }
 
-  // Десктопная версия - все колонки видны
+  // Десктопная версия - все колонки видны с увеличенными отступами
   return (
     <div className="h-[calc(100vh-180px)] overflow-auto">
       <DndContext
@@ -188,7 +188,7 @@ export function KanbanBoard() {
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex justify-center space-x-6 p-6 min-w-full h-full">
+        <div className="flex justify-center space-x-8 p-8 min-w-full h-full">
           {columns.map((column) => {
             const columnTasks = sortTasks(
               tasks.filter(task => task.status === column.id)
